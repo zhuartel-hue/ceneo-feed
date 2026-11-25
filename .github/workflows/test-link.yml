@@ -1,0 +1,15 @@
+name: test-link
+on:
+  push:
+    paths: [.github/workflows/test-link.yml]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          U=https://zhuartel-hue.github.io/ceneo-feed/ceneo.xml
+          for ua in "" "Ceneo" "Mozilla/5.0 (compatible; CeneoBot)"; do
+            for i in $(seq 1 10); do curl -s -o f.xml -w "%{http_code} " -A "$ua" "$U"; done; echo " <- ua=[$ua]"
+          done
+          python3 -c "import xml.etree.ElementTree as E; r=E.parse('f.xml').getroot(); print(r.tag, 'ofert:', len(r.findall('o')))"
+          curl -sI "$U" | grep -iE "content-type|last-modified"
